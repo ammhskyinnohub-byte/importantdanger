@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ရာသီလာမည့်ရက် မှတ်တမ်း</title>
+    <!-- App Manifest လင့်ခ်အတွက် နေရာအလွတ် -->
+    <link id="manifest-link" rel="manifest" href="">
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Padauk', sans-serif;
+            background-color: #fdf2f8; /* Soft pink background */
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        /* Hide scrollbar for clean app look */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+    </style>
+</head>
+<body class="text-gray-800 h-screen flex justify-center bg-pink-50">
+
+    <!-- Mobile App Container -->
+    <div class="w-full max-w-md bg-white h-full shadow-2xl relative overflow-y-auto">
+        
+        <!-- Header -->
+        <div class="bg-pink-400 text-white p-5 rounded-b-3xl shadow-md text-center">
+            <h1 class="text-2xl font-bold flex items-center justify-center gap-2">
+                🌸 ကောင်မလေးအတွက် 🌸
+            </h1>
+            <p class="text-pink-100 text-sm mt-1">ရာသီလာမည့်ရက် မှတ်တမ်း</p>
+        </div>
+
+        <div class="p-5 space-y-6 pb-20">
+            
+            <!-- Alert Banner (Hidden by default) -->
+            <div id="alertBanner" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg shadow-sm" role="alert">
+                <p class="font-bold flex items-center gap-2">
+                    <span>⚠️</span> သတိပေးချက်
+                </p>
+                <p id="alertMessage" class="text-sm mt-1">ရာသီလာမည့်ရက် နီးလာပါပြီ။ ဂရုစိုက်ပေးလိုက်ပါဦးနော်!</p>
+            </div>
+
+            <!-- Dashboard Card -->
+            <div class="glass-card rounded-2xl p-6 shadow-lg text-center border-t-4 border-pink-400">
+                <h2 class="text-gray-500 font-bold mb-2">နောက်တစ်ကြိမ် လာမည့်ရက်</h2>
+                <div id="nextPeriodDate" class="text-3xl font-extrabold text-pink-500 mb-2">--/--/----</div>
+                <div class="text-gray-600">
+                    <span id="daysLeft" class="text-2xl font-bold text-pink-600">--</span> 
+                    <span class="text-sm">ရက် လိုပါသေးသည်</span>
+                </div>
+                
+                <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between text-sm text-gray-500">
+                    <div>
+                        <p>နောက်ဆုံးလာခဲ့သည့်ရက်</p>
+                        <p id="displayLastDate" class="font-bold text-gray-700">--</p>
+                    </div>
+                    <div>
+                        <p>ရာသီစက်ဝန်း</p>
+                        <p id="displayCycle" class="font-bold text-gray-700">-- ရက်</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Form Card -->
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                <h3 class="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2">
+                    <span>📝</span> အချက်အလက်များထည့်ရန်
+                </h3>
+                
+                <form id="trackerForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">နောက်ဆုံး ရာသီစလာခဲ့သည့်ရက်</label>
+                        <input type="date" id="lastPeriodInput" required class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-pink-300 focus:outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">ရာသီစက်ဝန်း (ရက်) <span class="text-xs text-gray-400">- ပုံမှန် ၂၈ ရက်</span></label>
+                        <input type="number" id="cycleLengthInput" value="28" min="20" max="40" required class="w-full border border-gray-300 rounded-xl px-4 py-2 focus:ring-2 focus:ring-pink-300 focus:outline-none">
+                    </div>
+
+                    <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-xl shadow-md transition duration-300 active:scale-95">
+                        မှတ်သားမည်
+                    </button>
+                </form>
+            </div>
+
+            <!-- Settings & Install App -->
+            <div class="text-center space-y-4 pt-2">
+                <button id="enableNotifBtn" class="text-sm text-pink-500 underline hover:text-pink-700 block w-full">
+                    🔔 Notification သတိပေးချက် ဖွင့်မည်
+                </button>
+                
+                <!-- Install App Button (Hidden by default, shown on supported Android browsers) -->
+                <button id="installBtn" class="hidden w-full bg-white border-2 border-pink-400 text-pink-500 hover:bg-pink-50 font-bold py-2.5 rounded-xl shadow-sm transition duration-300 flex items-center justify-center gap-2">
+                    <span class="text-lg">📲</span> App အနေဖြင့် Install လုပ်မည်
+                </button>
+                <p id="installInstruction" class="text-xs text-gray-400">Android Chrome Browser မှတဆင့် App ကို Install ပြုလုပ်နိုင်ပါသည်။</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const form = document.getElementById('trackerForm');
+            const lastPeriodInput = document.getElementById('lastPeriodInput');
+            const cycleLengthInput = document.getElementById('cycleLengthInput');
+            
+            const nextPeriodDateDisplay = document.getElementById('nextPeriodDate');
+            const daysLeftDisplay = document.getElementById('daysLeft');
+            const displayLastDate = document.getElementById('displayLastDate');
+            const displayCycle = document.getElementById('displayCycle');
+            
+            const alertBanner = document.getElementById('alertBanner');
+            const enableNotifBtn = document.getElementById('enableNotifBtn');
+            const installBtn = document.getElementById('installBtn');
+            const installInstruction = document.getElementById('installInstruction');
+
+            let deferredPrompt;
+
+            // App Install & PWA Setup စတင်ခြင်း
+            setupPWA();
+
+            // Load data from localStorage
+            loadData();
+
+            // Form Submit Event
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const lastDate = lastPeriodInput.value;
+                const cycle = parseInt(cycleLengthInput.value);
+
+                if(lastDate && cycle) {
+                    // Save to localStorage
+                    localStorage.setItem('lastPeriodDate', lastDate);
+                    localStorage.setItem('cycleLength', cycle);
+                    
+                    // Update UI
+                    updateDashboard(lastDate, cycle);
+                    
+                    // Show success feedback (briefly)
+                    const btn = form.querySelector('button');
+                    const originalText = btn.innerText;
+                    btn.innerText = "✓ မှတ်သားပြီးပါပြီ";
+                    btn.classList.replace('bg-pink-500', 'bg-green-500');
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.classList.replace('bg-green-500', 'bg-pink-500');
+                    }, 2000);
+                }
+            });
+
+            // Enable Notification Button
+            enableNotifBtn.addEventListener('click', () => {
+                if (!("Notification" in window)) {
+                    alert("သင့် Browser သည် Notification ကို Support မလုပ်ပါ။");
+                } else if (Notification.permission === "granted") {
+                    alert("Notification ဖွင့်ထားပြီးဖြစ်ပါသည်။");
+                } else if (Notification.permission !== "denied") {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === "granted") {
+                            alert("Notification ဖွင့်လိုက်ပါပြီ!");
+                        }
+                    });
+                }
+            });
+
+            // Core Functions
+            function loadData() {
+                const savedDate = localStorage.getItem('lastPeriodDate');
+                const savedCycle = localStorage.getItem('cycleLength');
+
+                if (savedDate) {
+                    lastPeriodInput.value = savedDate;
+                    cycleLengthInput.value = savedCycle || 28;
+                    updateDashboard(savedDate, parseInt(savedCycle) || 28);
+                }
+            }
+
+            function updateDashboard(lastDateStr, cycleLength) {
+                const lastDate = new Date(lastDateStr);
+                
+                // Calculate next period date (Last Date + Cycle Length in days)
+                const nextDate = new Date(lastDate);
+                nextDate.setDate(nextDate.getDate() + cycleLength);
+
+                // Calculate days left from today
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Reset time for accurate day calc
+                
+                const timeDiff = nextDate.getTime() - today.getTime();
+                let daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+                // Format Dates for display
+                const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                
+                displayLastDate.innerText = lastDate.toLocaleDateString('my-MM', options);
+                displayCycle.innerText = cycleLength + " ရက်";
+                nextPeriodDateDisplay.innerText = nextDate.toLocaleDateString('my-MM', options);
+
+                // Logic for Overdue or Coming Soon
+                if (daysLeft < 0) {
+                    // It is overdue (Maybe period started but not logged yet)
+                    daysLeftDisplay.innerText = Math.abs(daysLeft);
+                    daysLeftDisplay.nextElementSibling.innerText = "ရက် ကျော်လွန်နေပါပြီ (မှတ်တမ်းအသစ်ထည့်ပါ)";
+                    daysLeftDisplay.classList.replace('text-pink-600', 'text-red-600');
+                    showAlert("ရာသီလာမည့်ရက် ကျော်လွန်နေပါသည်။ ရာသီလာခဲ့ပါက မှတ်တမ်းအသစ် ပြန်ထည့်ပေးပါ။");
+                } else if (daysLeft === 0) {
+                    daysLeftDisplay.innerText = "ဒီနေ့";
+                    daysLeftDisplay.nextElementSibling.innerText = "လာရန်ရှိပါသည်";
+                    showAlert("ဒီနေ့ ရာသီလာမည့်ရက် ဖြစ်ပါသည်။ ဂရုစိုက်ပေးလိုက်ပါဦးနော် 💖");
+                    sendBrowserNotification("ဒီနေ့ ရာသီလာမည့်ရက် ဖြစ်ပါသည်။ ဂရုစိုက်ပေးလိုက်ပါဦးနော် 💖");
+                } else {
+                    daysLeftDisplay.innerText = daysLeft;
+                    daysLeftDisplay.nextElementSibling.innerText = "ရက် လိုပါသေးသည်";
+                    daysLeftDisplay.classList.replace('text-red-600', 'text-pink-600');
+                    
+                    // Show alert if it's within 3 days
+                    if (daysLeft <= 3) {
+                        showAlert(`ရာသီလာရန် ${daysLeft} ရက်သာ လိုပါတော့သည်။ ကြိုတင်ပြင်ဆင်ထားနိုင်အောင် သတိပေးတာပါ!`);
+                        sendBrowserNotification(`ရာသီလာရန် ${daysLeft} ရက်သာ လိုပါတော့သည်။ ကြိုတင်ပြင်ဆင်ထားနိုင်အောင် သတိပေးတာပါ!`);
+                    } else {
+                        alertBanner.classList.add('hidden');
+                    }
+                }
+            }
+
+            function showAlert(message) {
+                alertBanner.classList.remove('hidden');
+                document.getElementById('alertMessage').innerText = message;
+            }
+
+            function sendBrowserNotification(message) {
+                // Only send if permission is granted and it hasn't been sent today
+                const lastNotifDate = localStorage.getItem('lastNotifDate');
+                const todayStr = new Date().toDateString();
+
+                if (Notification.permission === "granted" && lastNotifDate !== todayStr) {
+                    new Notification("ကောင်မလေးအတွက် 🌸", {
+                        body: message,
+                        icon: "🌸"
+                    });
+                    localStorage.setItem('lastNotifDate', todayStr);
+                }
+            }
+
+            // --- PWA (Installable App) Setup Functions ---
+            function setupPWA() {
+                // 1. App အချက်အလက်များ (Manifest) ကို တည်ဆောက်ခြင်း
+                const manifest = {
+                    "name": "ရာသီလာမည့်ရက် မှတ်တမ်း",
+                    "short_name": "ရာသီမှတ်တမ်း",
+                    "start_url": window.location.href,
+                    "display": "standalone",
+                    "background_color": "#fdf2f8",
+                    "theme_color": "#f472b6",
+                    "icons": [
+                        {
+                            "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48dGV4dCB5PSIuOWVtIiBmb250LXNpemU9IjkwIj7wn4y4PC90ZXh0Pjwvc3ZnPg==",
+                            "sizes": "192x192",
+                            "type": "image/svg+xml",
+                            "purpose": "any maskable"
+                        },
+                        {
+                            "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48dGV4dCB5PSIuOWVtIiBmb250LXNpemU9IjkwIj7wn4y4PC90ZXh0Pjwvc3ZnPg==",
+                            "sizes": "512x512",
+                            "type": "image/svg+xml"
+                        }
+                    ]
+                };
+                const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+                document.getElementById('manifest-link').href = URL.createObjectURL(manifestBlob);
+
+                // 2. Service Worker ကို တည်ဆောက်ခြင်း (Install လုပ်နိုင်ရန် လိုအပ်သည်)
+                const swCode = `
+                    self.addEventListener('install', (e) => self.skipWaiting());
+                    self.addEventListener('fetch', (e) => {});
+                `;
+                const swBlob = new Blob([swCode], { type: 'application/javascript' });
+                
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register(URL.createObjectURL(swBlob))
+                        .catch(err => console.log('SW setup failed:', err));
+                }
+
+                // 3. Android မှ Install လုပ်ရန် Prompt တောင်းခံခြင်း
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    // Browser က အလိုအလျောက်ပြမယ့် Prompt ကို တားထားမည်
+                    e.preventDefault();
+                    deferredPrompt = e;
+                    
+                    // Install Button ကို ဖော်ပြပေးမည်
+                    installBtn.classList.remove('hidden');
+                    installInstruction.classList.add('hidden');
+                });
+
+                installBtn.addEventListener('click', async () => {
+                    if (deferredPrompt) {
+                        // ဖုန်းရဲ့ Install Prompt ကို ခေါ်မည်
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        if (outcome === 'accepted') {
+                            installBtn.classList.add('hidden');
+                        }
+                        deferredPrompt = null;
+                    }
+                });
+
+                // App Install ပြီးသွားလျှင် Button ကို ပြန်ဖျောက်မည်
+                window.addEventListener('appinstalled', () => {
+                    installBtn.classList.add('hidden');
+                    deferredPrompt = null;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
